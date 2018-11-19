@@ -62,8 +62,8 @@ c_test = LoadDataset('tcga',data_root,batch_size,'test',style=doamin_c)
 
 
 for d1,d2,d3 in zip(a_test,b_test,c_test):
-    a_test_sample = d1[9].type(torch.FloatTensor)
-    b_test_sample = d2[0].clone().repeat(3,1,1).type(torch.FloatTensor)
+    a_test_sample = d1[0].type(torch.FloatTensor)
+    b_test_sample = d2[0].type(torch.FloatTensor)
     c_test_sample = d3[0].type(torch.FloatTensor)
     break
 
