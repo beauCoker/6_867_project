@@ -4,6 +4,8 @@ import sys
 import shutil
 import numpy as np
 import torch
+
+
 from torch.backends import cudnn
 import torch.optim as optim
 import torch.nn as nn
@@ -12,6 +14,7 @@ from torch.autograd import Variable, grad
 from src.data import LoadDataset
 from src.ufdn import LoadModel
 
+#We'll need to modify this for 3+ domains
 from src.util import vae_loss, calc_gradient_penalty, interpolate_vae_3d
 
 from tensorboardX import SummaryWriter 
@@ -22,9 +25,13 @@ cudnn.benchmark = True
 config_path = sys.argv[1]
 conf = yaml.load(open(config_path,'r'))
 exp_name = conf['exp_setting']['exp_name']
+#img_size is only used in conv nets
+#originally it was 64
 img_size = conf['exp_setting']['img_size']
+#20,501 img_depth
 img_depth = conf['exp_setting']['img_depth']
 
+#dictionary with number of steps and batch size
 trainer_conf = conf['trainer']
 
 if trainer_conf['save_checkpoint']:
@@ -44,6 +51,11 @@ np.random.seed(conf['exp_setting']['seed'])
 _ = torch.manual_seed(conf['exp_setting']['seed'])
 
 # Load dataset
+
+#TODO: add more than 3 domains 
+#text of domain name used for h5 file
+#conf['exp_setting']['domains']
+#domains: ['brca', 'dlbc',...,'acc']
 domain_a = conf['exp_setting']['domain_a']
 doamin_b = conf['exp_setting']['doamin_b']
 doamin_c = conf['exp_setting']['doamin_c']
@@ -52,6 +64,9 @@ doamin_c = conf['exp_setting']['doamin_c']
 data_root = conf['exp_setting']['data_root']
 batch_size = conf['trainer']['batch_size']
 
+#TODO: add more domains 
+#list of loaders? 
+#loaders = [Load for cancer in domains]
 a_loader = LoadDataset('tcga',data_root,batch_size,'train',style=domain_a)
 b_loader = LoadDataset('tcga',data_root,batch_size,'train',style=doamin_b)
 c_loader = LoadDataset('tcga',data_root,batch_size,'train',style=doamin_c)
@@ -60,7 +75,7 @@ a_test = LoadDataset('tcga',data_root,batch_size,'test',style=domain_a)
 b_test = LoadDataset('tcga',data_root,batch_size,'test',style=doamin_b)
 c_test = LoadDataset('tcga',data_root,batch_size,'test',style=doamin_c)
 
-
+#get samples for interpolation 
 for d1,d2,d3 in zip(a_test,b_test,c_test):
     a_test_sample = d1[0].type(torch.FloatTensor)
     b_test_sample = d2[0].type(torch.FloatTensor)
@@ -70,11 +85,11 @@ for d1,d2,d3 in zip(a_test,b_test,c_test):
 
 
 # Load Model
-enc_dim = conf['model']['vae']['encoder'][-1][1]
-code_dim = conf['model']['vae']['code_dim']
-vae_learning_rate = conf['model']['vae']['lr']
-vae_betas = tuple(conf['model']['vae']['betas'])
-df_learning_rate = conf['model']['D_feat']['lr']
+enc_dim = conf['model']['vae']['encoder'][-1][1] #latent space dimension #100
+code_dim = conf['model']['vae']['code_dim'] #number of domains #currently 3 
+vae_learning_rate = conf['model']['vae']['lr'] #learning rate #10e-4
+vae_betas = tuple(conf['model']['vae']['betas']) #used for adam optimizer
+df_learning_rate = conf['model']['D_feat']['lr'] #feature discriminator LR 
 df_betas = tuple(conf['model']['D_feat']['betas'])
 dp_learning_rate = conf['model']['D_pix']['lr']
 dp_betas = tuple(conf['model']['D_pix']['betas'])
@@ -134,6 +149,8 @@ forword_code = np.concatenate([np.repeat(np.array([[*([0]*int(code_dim/3)),
                                                    *([0]*int(code_dim/3)),
                                                    *([0]*int(code_dim/3))]]),batch_size,axis=0)],
                               axis=0)
+
+# with more domains, this 
 
 forword_code = torch.FloatTensor(forword_code)
 
