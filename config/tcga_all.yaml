@@ -31,7 +31,7 @@ model:
   D_pix:
     dnn: [['fc', 500, '', 'LeakyReLU',0], # input dimension is img_depth
           ['fc', 100, '', 'LeakyReLU',0],
-          ['fc', [1,3], '', '',0]
+          ['fc', [1,3], '', '',0] #output dimension is (1, number of domains)
          ]
     lr: 0.0001
     betas: [0.5,0.999]
