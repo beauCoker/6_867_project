@@ -67,11 +67,8 @@ batch_size = conf['trainer']['batch_size']
 #TODO: add more domains 
 #list of loaders? 
 #loaders = [Load for cancer in domains]
-
 train_loaders = [LoadDataset('tcga', data_root, batch_size, 'train', style=domains[0])]
-train_loaders += [cycle(LoadDataset('tcga',data_root,batch_size,'train',style=domain)) for domain in domains[1:]] 
-
-
+train_loaders += [cycle(LoadDataset('tcga',data_root,batch_size,'train',style=domain)) for domain in domains[1:]]
 test_loaders = [LoadDataset('tcga',data_root,batch_size,'test',style=domain) for domain in domains] 
 
 
@@ -93,13 +90,12 @@ reconstruct_loss = torch.nn.MSELoss()
 clf_loss = nn.BCEWithLogitsLoss()
 
 
-# Use cuda
-vae = vae.cuda()
-d_feat = d_feat.cuda()
-d_pix = d_pix.cuda()
+# Use cuda()
+#d_feat = d_feat.cuda()
+#d_pix = d_pix.cuda()
 
-reconstruct_loss = reconstruct_loss.cuda()
-clf_loss = clf_loss.cuda()
+#reconstruct_loss = reconstruct_loss.cuda()
+#clf_loss = clf_loss.cuda()
 
 
 # Optmizer
@@ -157,16 +153,16 @@ while global_step < trainer_conf['total_step']:
         
         # data augmentation
         input_img = torch.cat([image.type(torch.FloatTensor) for image in train_images],dim=0)
-        input_img =  Variable(input_img.cuda(),requires_grad=False)
+        input_img =  Variable(input_img,requires_grad=False)
 
 
-        code = Variable(torch.FloatTensor(domain_code).cuda(),requires_grad=False)
+        code = Variable(torch.FloatTensor(domain_code),requires_grad=False)
         invert_code = 1-code
 
         if global_step%2 == 0:
-            trans_code = Variable(torch.FloatTensor(forword_code).cuda(),requires_grad=False)
+            trans_code = Variable(torch.FloatTensor(forword_code),requires_grad=False)
         else:
-            trans_code = Variable(torch.FloatTensor(backword_code).cuda(),requires_grad=False) 
+            trans_code = Variable(torch.FloatTensor(backword_code),requires_grad=False) 
       
   
         # Train Feature Discriminator
@@ -191,7 +187,7 @@ while global_step < trainer_conf['total_step']:
         pix_real_pred = pix_real_pred.mean()
         pix_fake_pred = pix_fake_pred.mean()
 
-        gp = loss_lambda['gp']['cur']*calc_gradient_penalty(d_pix,input_img.data,fake_img.data)
+        gp = loss_lambda['gp']['cur']*calc_gradient_penalty(d_pix,input_img.data,fake_img.data, use_gpu=False)
         pix_code_loss = clf_loss(pix_real_code_pred,code)
         
         d_pix_loss = pix_code_loss + pix_fake_pred - pix_real_pred + gp

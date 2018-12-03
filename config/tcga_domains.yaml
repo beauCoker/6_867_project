@@ -1,14 +1,14 @@
 exp_setting:
-  exp_name: 'tcga_01'                         # Expriment title, log/checkpoint files will be named after this
+  exp_name: 'tcga_domain'                         # Expriment title, log/checkpoint files will be named after this
   checkpoint_dir: 'checkpoint/'               # Folder for model checkpoints
   log_dir: 'log/'                             # Folder for training logs
   data_root: 'data/tcga_01/'
   seed: 1
   img_size: -1 # What should this be? Can it be removed? Not used as long as no cnn
   img_depth: 20501 # May want to rename this to input_dim or something
-  domains: ['acc',
+  domains: ['brca',
+           'acc',
            'blca',
-           'brca',
            'cesc',
            'chol',
            'coad',

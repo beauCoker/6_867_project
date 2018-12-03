@@ -12,10 +12,10 @@
 
 #srun ./shell_ben_venv.shU
 
-source venv3/bin/activate # Change venv6 to your python virtual environment (which should be in the working directory)
+source venv7/bin/activate # Change venv6 to your python virtual environment (which should be in the working directory)
 
 module load cuda/9.0
 
-python3 train_tcga.py config/tcga_01.yaml # Select the .yaml file here
+python3 train_tcga_domains.py config/tcga_domains.yaml # Select the .yaml file here
 
 deactivate
